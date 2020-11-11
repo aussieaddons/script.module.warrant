@@ -46,5 +46,5 @@ jobs:
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
           git status
           git add .
-          git commit --allow-empty -m "$TRAVIS_COMMIT_MSG"
+          git commit --allow-empty -m "${{ github.event.head_commit.message }}"
           git push
