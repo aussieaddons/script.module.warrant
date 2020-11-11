@@ -31,6 +31,7 @@ jobs:
         with:
           repository: aussieaddons/repo-devel
           path: .deploy-devel
+          persist-credentials: false
 
       # Runs a single command using the runners shell
       - name: Set git credentials
