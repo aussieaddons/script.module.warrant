@@ -20,10 +20,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-            - name: Install dependencies
-              run: pip install GitPython
+      - name: Install dependencies
+        run: pip install GitPython
       - name: Checkout this repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # anything other than 0 will not get tags
       - name: Checkout devel repo
         uses: actions/checkout@v2
         with:
@@ -44,3 +46,5 @@ jobs:
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
           git status
           git add .
+          git commit --allow-empty -m "$TRAVIS_COMMIT_MSG"
+          git push
