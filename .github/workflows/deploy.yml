@@ -6,16 +6,10 @@ on:
   release:
     branches: [ master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -32,20 +26,32 @@ jobs:
           repository: aussieaddons/repo-devel
           path: .deploy-devel
           token: ${{ secrets.PAT }}
-
-      # Runs a single command using the runners shell
+      - if: github.event_name == 'release'
+        name: Checkout production repo
+        uses: actions/checkout@v2
+        with:
+          repository: aussieaddons/repo
+          path: .deploy
+          token: ${{ secrets.PAT }}
       - name: Set git credentials
         run: |
           git config --global user.email 'aussieaddons@aussieaddons.com'
           git config --global user.name 'Aussie Add-ons Bot'
           git config credential.helper "store --file=.git/credentials"
           #echo "https://${{ secrets.PAT }}:@github.com" > .git/credentials
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Execute manage_repo.py and commit/push to devel
         run: |
           cd $GITHUB_WORKSPACE/.deploy-devel
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
-          git status
           git add .
           git commit --allow-empty -m "${{ github.event.head_commit.message }}"
           git push
+      - if: github.event_name == 'release'
+        name: Execute manage_repo.py and commit/push to production
+        run: |
+          cd $GITHUB_WORKSPACE/.deploy
+          ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
+          git add .
+          git commit --allow-empty -m "Update $(basename `git -C $GITHUB_WORKSPACE rev-parse --show-toplevel`) to ${{ github.event.release.tag_name }}"
+          git push
+
