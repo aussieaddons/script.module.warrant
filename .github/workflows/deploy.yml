@@ -40,18 +40,23 @@ jobs:
           git config credential.helper "store --file=.git/credentials"
           #echo "https://${{ secrets.PAT }}:@github.com" > .git/credentials
       - name: Execute manage_repo.py and commit/push to devel
+        env:
+          COMMIT_MSG: ${{ github.event.repository.name }} - $(git log --format=%B --no-merges -n 1)
         run: |
           cd $GITHUB_WORKSPACE/.deploy-devel
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
           git add .
-          git commit --allow-empty -m "${{ github.event.head_commit.message }}"
+          git commit --allow-empty -m "$COMMIT_MSG"
           git push
       - if: github.event_name == 'release'
         name: Execute manage_repo.py and commit/push to production
+        env:
+          REPO: ${{ github.event.repository.name }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           cd $GITHUB_WORKSPACE/.deploy
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
           git add .
-          git commit --allow-empty -m "Update $(basename `git -C $GITHUB_WORKSPACE rev-parse --show-toplevel`) to ${{ github.event.release.tag_name }}"
+          git commit --allow-empty -m "Update $REPO to $TAG"
           git push
 
