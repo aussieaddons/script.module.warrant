@@ -41,7 +41,7 @@ jobs:
           #echo "https://${{ secrets.PAT }}:@github.com" > .git/credentials
       - name: Execute manage_repo.py and commit/push to devel
         env:
-          COMMIT_MSG: ${{ github.event.repository.name }} - $(git log --format=%B --no-merges -n 1)
+          COMMIT_MSG: ${{ github.event.repository.name }} - ${{ github.event.head_commit.message }}
         run: |
           cd $GITHUB_WORKSPACE/.deploy-devel
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
