@@ -49,10 +49,14 @@ jobs:
           git commit --allow-empty -m "$COMMIT_MSG"
           git push
       - if: startsWith(github.ref, 'refs/tags/v')
+        name: Extract tag name
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - if: startsWith(github.ref, 'refs/tags/v')
         name: Execute manage_repo.py and commit/push to production
         env:
           REPO: ${{ github.event.repository.name }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ steps.vars.outputs.tag }}
         run: |
           cd $GITHUB_WORKSPACE/.deploy
           ./manage_repo.py $GITHUB_WORKSPACE -b leia matrix
