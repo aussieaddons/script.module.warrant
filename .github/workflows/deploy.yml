@@ -3,8 +3,8 @@ name: Deploy to repo/repo-devel
 on:
   push:
     branches: [ master ]
-  release:
-    branches: [ master ]
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
           repository: aussieaddons/repo-devel
           path: .deploy-devel
           token: ${{ secrets.PAT }}
-      - if: github.event_name == 'release'
+      - if: startsWith(github.ref, 'refs/tags/v')
         name: Checkout production repo
         uses: actions/checkout@v2
         with:
@@ -48,7 +48,7 @@ jobs:
           git add .
           git commit --allow-empty -m "$COMMIT_MSG"
           git push
-      - if: github.event_name == 'release'
+      - if: startsWith(github.ref, 'refs/tags/v')
         name: Execute manage_repo.py and commit/push to production
         env:
           REPO: ${{ github.event.repository.name }}
